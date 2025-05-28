@@ -15,29 +15,14 @@ from torch.utils.data.sampler import SubsetRandomSampler
 # CAMINHO DA IMAGEM
 caminho_imagens = 'C:\Users\User\Downloads\tomate'
 
-# FAZER A FUNÇÃO DE NORMALIZAÇÃO
 img_width = 256
 img_height = 256
-
-
-# *******PROBLEMAS: NAO CONSIGO USAR MEAN E STD FORA DA FUNÇÃO, ESTOU CALCULANDO PRA UMA IMG ALEATORIA E PRECISO CALCULAR PRA TODO DATABASE**********
-def calcular_media_desvio():
-    img = torch.randn(3, img_height, img_width)
-    media_r = img[0].mean().item()
-    media_g = img[1].mean().item()
-    media_b = img[2].mean().item()
-    desvio_r = img[0].std().item()
-    desvio_g = img[1].std().item()
-    desvio_b = img[2].std().item()
-    mean = [media_r, media_g, media_b]
-    std = [desvio_r, desvio_g, desvio_b]
 
 
 # TRANSOFMRAÇÕES DE PRE-PROCESSAMENTO
 transformacoes = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Normalize(mean=mean, std=std)
 ])
 
 # CARREGA O DATASET DO CAMINHO DEFINIDO E APLICA AS TRANSFORMACOES
@@ -49,7 +34,7 @@ qtd_amostras = len(dataset)
 qtd_imagens_teste = tamanho_validacao * qtd_amostras
 qtd_imagens_validacao = qtd_amostras - qtd_imagens_teste
 
-# ARRAY COM TODOS OS MEUS INDICES EMBARALHADOSVI QUE É BOM TER SEED PRA PODER SER REPRODUZIDO DEPOIS)
+# ARRAY COM TODOS OS MEUS INDICES EMBARALHADOS (VI QUE É BOM TER SEED PRA PODER SER REPRODUZIDO DEPOIS)
 indices = list(range(qtd_amostras))
 np.random.seed(42)
 np.random.shuffle(indices)
@@ -69,3 +54,21 @@ validacao_loader = torch.utils.data.DataLoader(
     dataset, batch_size=batch_tamanho, sampler=sample_validacao)
 
 # FAZER UM GET PRA PEGAR ESSES DATALOADER OU BOTAR TUDO DENTRO DE UMA FUNÇÃO E FAZER UM RETURN
+
+
+#FUNÇÃO DE NORMALIZAÇÃO
+def calcular_media_desvio(dataLoader):
+    soma_canais, soma_canais_ao_quadrado, numero_batches = 0,0,0
+    for imgs, _ in dataLoader:
+        soma_canais += torch.mean(imgs, dim=[0,2,3]) #dim de dimensao, 0 é os batchs entao eu somo todas as imgs do batch, 2 e 3 "são altura e largura" 
+        #soma_canais é um vetor com 3 valores, sendo a media de cada canal  
+        soma_canais_ao_quadrado += torch.mean(imgs**2, dim=[0,2,3]) #serve pra calcular a variacia->desvio,esses dois são uma soma por causa do +=
+        numero_batches += 1 #média das médias por batch. Isso é uma boa aproximação da média global
+    media = soma_canais / numero_batches
+    desvio = (soma_canais_ao_quadrado/numero_batches - media**2)*0.5#0.5 é a raiz e esse entre parenteses é a formula da variancia
+
+    return media, desvio
+
+
+media, desvio = calcular_media_desvio()
+transforms.Normalize(mean=media, std=desvio)
