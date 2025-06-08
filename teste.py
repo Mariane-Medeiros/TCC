@@ -1,71 +1,171 @@
-# IMPORTS
 import numpy as np
 import torch
-import psutil
+import torch.nn as nn
 from torchvision import datasets
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
+import matplotlib.pyplot as plt
 
-# cuidar a quantidade de memoria que esta sendo usada, cuidado ao passar de 12:
-# mem = psutil.virtual_memory()
-# print(f"Memória usada: {mem.used / (1024 ** 3):.2f} GB")
-# print(f"Disponível: {mem.available / (1024 ** 3):.2f} GB")
 
-# CAMINHO DA IMAGEM
-caminho_imagens = 'C:\Users\User\Downloads\tomate'
+caminho_imagens = 'C:/Users/User/Downloads/tomate'
 
-# FAZER A FUNÇÃO DE NORMALIZAÇÃO
 img_width = 256
 img_height = 256
+batch_tamanho = 16
+tamanho_validacao = 0.2
 
-
-# *******PROBLEMAS: NAO CONSIGO USAR MEAN E STD FORA DA FUNÇÃO, ESTOU CALCULANDO PRA UMA IMG ALEATORIA E PRECISO CALCULAR PRA TODO DATABASE**********
-def calcular_media_desvio():
-    img = torch.randn(3, img_height, img_width)
-    media_r = img[0].mean().item()
-    media_g = img[1].mean().item()
-    media_b = img[2].mean().item()
-    desvio_r = img[0].std().item()
-    desvio_g = img[1].std().item()
-    desvio_b = img[2].std().item()
-    mean = [media_r, media_g, media_b]
-    std = [desvio_r, desvio_g, desvio_b]
-
-
-# TRANSOFMRAÇÕES DE PRE-PROCESSAMENTO
 transformacoes = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Normalize(mean=mean, std=std)
 ])
 
-# CARREGA O DATASET DO CAMINHO DEFINIDO E APLICA AS TRANSFORMACOES
+
 dataset = datasets.ImageFolder(root=caminho_imagens, transform=transformacoes)
 
-# VARIAVEIS PARA QUANTIDADE DE TESTE E VALIDACAO
-tamanho_validacao = 0.1
 qtd_amostras = len(dataset)
-qtd_imagens_teste = tamanho_validacao * qtd_amostras
+qtd_imagens_teste = int(tamanho_validacao * qtd_amostras)
 qtd_imagens_validacao = qtd_amostras - qtd_imagens_teste
 
-# ARRAY COM TODOS OS MEUS INDICES EMBARALHADOSVI QUE É BOM TER SEED PRA PODER SER REPRODUZIDO DEPOIS)
+
 indices = list(range(qtd_amostras))
 np.random.seed(42)
 np.random.shuffle(indices)
 
 
-# FAZER O SAMPLE PRA USAR NO DATALOADER
 indices_teste = indices[:qtd_imagens_teste]
 indices_validacao = indices[qtd_imagens_teste:]
 sample_teste = SubsetRandomSampler(indices_teste)
 sample_validacao = SubsetRandomSampler(indices_validacao)
 
-# CARREGAR 2 DATALOADER, SubsetRandomSampler PRA QUE OS DADOS SEJAM MISTURADOS A CADA EPOCA
-batch_tamanho = 16
+
 teste_loader = torch.utils.data.DataLoader(
     dataset, batch_size=batch_tamanho, sampler=sample_teste)
 validacao_loader = torch.utils.data.DataLoader(
     dataset, batch_size=batch_tamanho, sampler=sample_validacao)
 
 # FAZER UM GET PRA PEGAR ESSES DATALOADER OU BOTAR TUDO DENTRO DE UMA FUNÇÃO E FAZER UM RETURN
+
+
+def calcular_media_desvio(dataLoader):
+    soma_canais, soma_canais_ao_quadrado, numero_batches = 0, 0, 0
+    for imgs, _ in dataLoader:
+        soma_canais += torch.mean(imgs, dim=[0, 2, 3])
+        soma_canais_ao_quadrado += torch.mean(imgs**2, dim=[0, 2, 3])
+        numero_batches += 1
+    media = soma_canais / numero_batches
+    desvio = (soma_canais_ao_quadrado/numero_batches - media**2).sqrt()
+
+    return media, desvio
+
+
+media, desvio = calcular_media_desvio(teste_loader)
+transformacoes.transforms.append(transforms.Normalize(mean=media, std=desvio))
+dataset.transform = transformacoes
+
+# tive que recriar os dataloader pra aplicar a normalização, alterar depois
+teste_loader = torch.utils.data.DataLoader(
+    dataset, batch_size=batch_tamanho, sampler=sample_teste)
+validacao_loader = torch.utils.data.DataLoader(
+    dataset, batch_size=batch_tamanho, sampler=sample_validacao)
+
+
+def mostrar_batch(data_loader, dataset):
+    for imagens, rotulos in data_loader:
+        print(f'Formato das imagens no batch: {imagens.shape}')
+        print(f'Rótulos do batch: {rotulos.tolist()}')
+
+        img = imagens[0].permute(1, 2, 0)
+        img = img * desvio.detach().clone() + media.detach().clone()
+        img = img.clamp(0, 1)
+
+        plt.imshow(img)
+        nome_classe = dataset.classes[rotulos[0]]
+        plt.title(f'Classe: {nome_classe}')
+        plt.axis('off')
+        plt.show()
+        break
+
+
+class BlocoResidual(nn.Module):
+    def __init__(self, canais_entrada, canais_saida, stride=1, downsample=None):
+        super(BlocoResidual, self).__init__()
+        self.conv1 = nn.Conv2d(canais_entrada, canais_saida,
+                               kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(canais_saida)
+        self.conv2 = nn.Conv2d(canais_saida, canais_saida,
+                               kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(canais_saida)
+        self.relu = nn.ReLU()
+        self.downsample = downsample
+
+    def forward(self, x):
+        input = x
+        output = self.conv1(x)
+        output = self.bn1(output)
+        output = self.conv2(output)
+        output = self.bn2(output)
+        if self.downsample:
+            input = self.downsample(x)
+        output += input
+        output = self.relu(output)
+        return output
+
+
+class ResNet(nn.Module):
+    def __init__(self, bloco, camadas, numero_classes):
+        super().__init__()
+
+        self.canais_entrada = 64
+
+        self.conv1 = nn.Conv2d(3, self.canais_entrada, kernel_size=7,
+                               stride=2, padding=3, bias=False)  # 3 canais inicias -> rgb
+        self.bn1 = nn.BatchNorm2d(num_features=self.canais_entrada)
+        self.relu = nn.ReLU(inplace=True)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
+        self.camada0 = self.criar_camada(bloco, 64, camadas[0], stride=1)
+        self.camada1 = self.criar_camada(bloco, 128, camadas[1], stride=2)
+        self.camada2 = self.criar_camada(bloco, 256, camadas[2], stride=2)
+        self.camada3 = self.criar_camada(bloco, 512, camadas[3], stride=2)
+
+        self.adppool = nn.AdaptiveAvgPool2d((1, 1))
+        self.classificacao = nn.Linear(
+            in_features=512, out_features=numero_classes)
+
+    def criar_camada(self, bloco, canais_saida, blocos, stride=1):
+        downsample = None
+
+        if stride != 1 or self.canais_entrada != canais_saida:
+            downsample = nn.Sequential(
+                nn.Conv2d(self.canais_entrada, canais_saida,
+                          kernel_size=1, stride=stride),
+                nn.BatchNorm2d(canais_saida),
+            )
+
+        camadas = []
+        camadas.append(bloco(self.canais_entrada,
+                       canais_saida, stride, downsample))
+        self.canais_entrada = canais_saida
+
+        for i in range(1, blocos):
+            camadas.append(bloco(self.canais_entrada, canais_saida))
+
+        return nn.Sequential(*camadas)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+
+        x = self.camada0(x)
+        x = self.camada1(x)
+        x = self.camada2(x)
+        x = self.camada3(x)
+
+        x = self.adppool(x)
+        x = torch.flatten(x, 1)
+        x = self.classificacao(x)
+
+        return x
