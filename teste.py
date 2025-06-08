@@ -7,44 +7,41 @@ from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 import matplotlib.pyplot as plt
 
-
 caminho_imagens = 'C:/Users/User/Downloads/tomate'
 
 img_width = 256
 img_height = 256
 batch_tamanho = 16
 tamanho_validacao = 0.2
+numero_classes = 6
+numero_epocas = 20
+batch_size = 16
+taxa_aprendizado = 0.01
 
-transformacoes = transforms.Compose([
+transform_basico = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
 ])
 
+dataset_temp = datasets.ImageFolder(
+    root=caminho_imagens, transform=transform_basico)
 
-dataset = datasets.ImageFolder(root=caminho_imagens, transform=transformacoes)
-
-qtd_amostras = len(dataset)
+qtd_amostras = len(dataset_temp)
 qtd_imagens_teste = int(tamanho_validacao * qtd_amostras)
 qtd_imagens_validacao = qtd_amostras - qtd_imagens_teste
-
 
 indices = list(range(qtd_amostras))
 np.random.seed(42)
 np.random.shuffle(indices)
 
-
 indices_teste = indices[:qtd_imagens_teste]
 indices_validacao = indices[qtd_imagens_teste:]
+
 sample_teste = SubsetRandomSampler(indices_teste)
 sample_validacao = SubsetRandomSampler(indices_validacao)
 
-
-teste_loader = torch.utils.data.DataLoader(
-    dataset, batch_size=batch_tamanho, sampler=sample_teste)
-validacao_loader = torch.utils.data.DataLoader(
-    dataset, batch_size=batch_tamanho, sampler=sample_validacao)
-
-# FAZER UM GET PRA PEGAR ESSES DATALOADER OU BOTAR TUDO DENTRO DE UMA FUNÇÃO E FAZER UM RETURN
+teste_loader_temp = DataLoader(
+    dataset_temp, batch_size=batch_tamanho, sampler=sample_teste)
 
 
 def calcular_media_desvio(dataLoader):
@@ -54,19 +51,25 @@ def calcular_media_desvio(dataLoader):
         soma_canais_ao_quadrado += torch.mean(imgs**2, dim=[0, 2, 3])
         numero_batches += 1
     media = soma_canais / numero_batches
-    desvio = (soma_canais_ao_quadrado/numero_batches - media**2).sqrt()
-
+    desvio = (soma_canais_ao_quadrado / numero_batches - media**2).sqrt()
     return media, desvio
 
 
-media, desvio = calcular_media_desvio(teste_loader)
-transformacoes.transforms.append(transforms.Normalize(mean=media, std=desvio))
-dataset.transform = transformacoes
+media, desvio = calcular_media_desvio(teste_loader_temp)
 
-# tive que recriar os dataloader pra aplicar a normalização, alterar depois
-teste_loader = torch.utils.data.DataLoader(
+
+transformacoes = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=media, std=desvio),
+])
+
+dataset = datasets.ImageFolder(root=caminho_imagens, transform=transformacoes)
+
+
+treinamento_loader = DataLoader(
     dataset, batch_size=batch_tamanho, sampler=sample_teste)
-validacao_loader = torch.utils.data.DataLoader(
+validacao_loader = DataLoader(
     dataset, batch_size=batch_tamanho, sampler=sample_validacao)
 
 
@@ -169,3 +172,14 @@ class ResNet(nn.Module):
         x = self.classificacao(x)
 
         return x
+
+
+device = torch.device("cpu")
+model = ResNet(BlocoResidual, [2, 2, 2, 2]).to(device)
+funcao_perda = nn.CrossEntropyLoss()
+optimizer = torch.optim.SGD(
+    model.parameters(), lr=taxa_aprendizado, weight_decay=0.001, momentum=0.9)
+
+total_steps = len(validacao_loader)
+
+torch.save(model.state_dict(), 'modelo_resnet.pth')
