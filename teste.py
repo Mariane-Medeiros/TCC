@@ -6,6 +6,7 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 import matplotlib.pyplot as plt
+import gc
 
 caminho_imagens = 'C:/Users/User/Downloads/tomate'
 
@@ -175,7 +176,7 @@ class ResNet(nn.Module):
 
 
 device = torch.device("cpu")
-model = ResNet(BlocoResidual, [2, 2, 2, 2]).to(device)
+model = ResNet(BlocoResidual, [2, 2, 2, 2], 6).to(device)
 funcao_perda = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(
     model.parameters(), lr=taxa_aprendizado, weight_decay=0.001, momentum=0.9)
@@ -183,3 +184,77 @@ optimizer = torch.optim.SGD(
 total_steps = len(validacao_loader)
 
 torch.save(model.state_dict(), 'modelo_resnet.pth')
+
+
+# Loop de treinamento e validação
+for epoca in range(numero_epocas):
+    print(f"\n⏳ Época {epoca + 1}/{numero_epocas}")
+    model.train()  # Coloca o modelo em modo de treinamento
+
+    total_loss_treino = 0
+    total_corretos_treino = 0
+    total_amostras_treino = 0
+
+    # -----------------------------
+    # Treinamento
+    # -----------------------------
+    for imagens, rotulos in treinamento_loader:
+        imagens, rotulos = imagens.to(device), rotulos.to(device)
+
+        optimizer.zero_grad()
+
+        saidas = model(imagens)
+        perda = funcao_perda(saidas, rotulos)
+
+        perda.backward()
+        optimizer.step()
+
+        # Acumula métricas
+        total_loss_treino += perda.item() * imagens.size(0)
+        _, previsoes = torch.max(saidas, 1)
+        total_corretos_treino += (previsoes == rotulos).sum().item()
+        total_amostras_treino += rotulos.size(0)
+
+        # Liberação de memória
+        del imagens, rotulos, saidas, perda, previsoes
+        torch.cuda.empty_cache()
+        gc.collect()
+
+    perda_media_treino = total_loss_treino / total_amostras_treino
+    acuracia_treino = total_corretos_treino / total_amostras_treino * 100
+    print(
+        f"✅ Treinamento — Perda média: {perda_media_treino:.4f} | Acurácia: {acuracia_treino:.2f}%")
+
+    # -----------------------------
+    # Validação
+    # -----------------------------
+    model.eval()  # Coloca o modelo em modo de avaliação
+    total_loss_validacao = 0
+    total_corretos_validacao = 0
+    total_amostras_validacao = 0
+
+    with torch.no_grad():
+        for imagens, rotulos in validacao_loader:
+            imagens, rotulos = imagens.to(device), rotulos.to(device)
+
+            saidas = model(imagens)
+            perda = funcao_perda(saidas, rotulos)
+            total_loss_validacao += perda.item() * imagens.size(0)
+
+            _, previsoes = torch.max(saidas, 1)
+            total_corretos_validacao += (previsoes == rotulos).sum().item()
+            total_amostras_validacao += rotulos.size(0)
+
+            # Liberação de memória
+            del imagens, rotulos, saidas, perda, previsoes
+            torch.cuda.empty_cache()
+            gc.collect()
+
+    perda_media_validacao = total_loss_validacao / total_amostras_validacao
+    acuracia_validacao = total_corretos_validacao / total_amostras_validacao * 100
+    print(
+        f"🔍 Validação — Perda média: {perda_media_validacao:.4f} | Acurácia: {acuracia_validacao:.2f}%")
+
+# Salvamento final do modelo após todas as épocas
+torch.save(model.state_dict(), 'modelo_final.pth')
+print("💾 Modelo salvo com sucesso como 'modelo_final.pth'")
