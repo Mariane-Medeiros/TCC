@@ -8,7 +8,7 @@ import os
 
 # Caminho onde as imagens estão e o modelo foi salvo
 caminho_imagens = 'C:/Users/User/Downloads/tomate'
-caminho_modelo = 'modelo_final.pth'  # ou 'modelo_epoca_resnet2.pth'
+caminho_modelo = 'modelo_final2.pth'  # ou 'modelo_epoca_resnet2.pth'
 
 # Parâmetros
 batch_tamanho = 16

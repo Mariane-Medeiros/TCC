@@ -1,0 +1,86 @@
+###comandos do git
+ git add .
+ git commit -m "modelo"
+ git push
+
+
+ ###COLAR AQUI ATÉ O 20/20
+ Época 1/20
+ Treinamento — Perda média: 1.1509 | Acurácia: 62.11%
+ Validação — Perda média: 0.7946 | Acurácia: 72.86%
+
+ Época 2/20
+ Treinamento — Perda média: 0.7771 | Acurácia: 72.16%
+ Validação — Perda média: 1.0055 | Acurácia: 63.52%
+
+ Época 3/20
+ Treinamento — Perda média: 0.6816 | Acurácia: 76.29%
+ Validação — Perda média: 0.5981 | Acurácia: 78.00%
+
+ Época 4/20
+ Treinamento — Perda média: 0.5260 | Acurácia: 81.19%
+ Validação — Perda média: 0.4705 | Acurácia: 82.79%
+
+ Época 5/20
+ Treinamento — Perda média: 0.5086 | Acurácia: 82.32%
+ Validação — Perda média: 0.5433 | Acurácia: 81.01%
+
+ Época 6/20
+ Treinamento — Perda média: 0.4357 | Acurácia: 84.90%
+ Validação — Perda média: 0.5404 | Acurácia: 83.22%
+
+ Época 7/20
+ Treinamento — Perda média: 0.4348 | Acurácia: 85.21%
+ Validação — Perda média: 0.3653 | Acurácia: 86.73%
+
+ Época 8/20
+ Treinamento — Perda média: 0.3722 | Acurácia: 87.01%
+ Validação — Perda média: 0.4078 | Acurácia: 85.07%
+
+ Época 9/20
+ Treinamento — Perda média: 0.3080 | Acurácia: 88.40%
+ Validação — Perda média: 0.3327 | Acurácia: 89.59%
+
+ Época 10/20
+ Treinamento — Perda média: 0.3617 | Acurácia: 87.32%
+ Validação — Perda média: 0.2928 | Acurácia: 89.78%
+
+ Época 11/20
+ Treinamento — Perda média: 0.2895 | Acurácia: 89.59%
+ Validação — Perda média: 0.3853 | Acurácia: 86.60%
+
+ Época 12/20
+ Treinamento — Perda média: 0.3148 | Acurácia: 88.71%
+ Validação — Perda média: 0.3662 | Acurácia: 87.87%
+
+ Época 13/20
+ Treinamento — Perda média: 0.2412 | Acurácia: 91.24%
+ Validação — Perda média: 0.3330 | Acurácia: 88.38%
+
+ Época 14/20
+ Treinamento — Perda média: 0.2475 | Acurácia: 91.13%
+ Validação — Perda média: 0.2880 | Acurácia: 89.51%
+
+ Época 15/20
+ Treinamento — Perda média: 0.2572 | Acurácia: 90.62%
+ Validação — Perda média: 0.3362 | Acurácia: 88.10%
+
+ Época 16/20
+ Treinamento — Perda média: 0.2412 | Acurácia: 90.72%
+ Validação — Perda média: 0.2713 | Acurácia: 90.84%
+
+ Época 17/20
+ Treinamento — Perda média: 0.2602 | Acurácia: 91.13%
+ Validação — Perda média: 0.2760 | Acurácia: 90.69%
+
+ Época 18/20
+ Treinamento — Perda média: 0.2161 | Acurácia: 92.22%
+ Validação — Perda média: 0.2619 | Acurácia: 91.03%
+
+ Época 19/20
+ Treinamento — Perda média: 0.2251 | Acurácia: 92.27%
+ Validação — Perda média: 0.2212 | Acurácia: 92.77%
+
+ Época 20/20
+ Treinamento — Perda média: 0.1680 | Acurácia: 93.71%
+ Validação — Perda média: 0.2548 | Acurácia: 90.85%

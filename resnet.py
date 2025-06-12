@@ -183,8 +183,6 @@ optimizer = torch.optim.SGD(
 
 total_steps = len(validacao_loader)
 
-torch.save(model.state_dict(), 'modelo_final_resnet.pth')
-
 
 for epoca in range(numero_epocas):
     print(f"\n Época {epoca + 1}/{numero_epocas}")
@@ -242,7 +240,6 @@ for epoca in range(numero_epocas):
     acuracia_validacao = total_corretos_validacao / total_amostras_validacao * 100
     print(
         f" Validação — Perda média: {perda_media_validacao:.4f} | Acurácia: {acuracia_validacao:.2f}%")
-    torch.save(model.state_dict(), 'modelo_epoca_resnet2.pth')
+    torch.save(model.state_dict(), 'modelo_epoca_resnet3.pth')
 
-torch.save(model.state_dict(), 'modelo_final2.pth')
-print(" Modelo salvo com sucesso como 'modelo_final.pth'")
+torch.save(model.state_dict(), 'modelo_final3.pth')
