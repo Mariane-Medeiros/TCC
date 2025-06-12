@@ -183,21 +183,17 @@ optimizer = torch.optim.SGD(
 
 total_steps = len(validacao_loader)
 
-torch.save(model.state_dict(), 'modelo_resnet.pth')
+torch.save(model.state_dict(), 'modelo_final_resnet.pth')
 
 
-# Loop de treinamento e validação
 for epoca in range(numero_epocas):
-    print(f"\n⏳ Época {epoca + 1}/{numero_epocas}")
-    model.train()  # Coloca o modelo em modo de treinamento
+    print(f"\n Época {epoca + 1}/{numero_epocas}")
+    model.train()
 
     total_loss_treino = 0
     total_corretos_treino = 0
     total_amostras_treino = 0
 
-    # -----------------------------
-    # Treinamento
-    # -----------------------------
     for imagens, rotulos in treinamento_loader:
         imagens, rotulos = imagens.to(device), rotulos.to(device)
 
@@ -209,13 +205,11 @@ for epoca in range(numero_epocas):
         perda.backward()
         optimizer.step()
 
-        # Acumula métricas
         total_loss_treino += perda.item() * imagens.size(0)
         _, previsoes = torch.max(saidas, 1)
         total_corretos_treino += (previsoes == rotulos).sum().item()
         total_amostras_treino += rotulos.size(0)
 
-        # Liberação de memória
         del imagens, rotulos, saidas, perda, previsoes
         torch.cuda.empty_cache()
         gc.collect()
@@ -223,12 +217,8 @@ for epoca in range(numero_epocas):
     perda_media_treino = total_loss_treino / total_amostras_treino
     acuracia_treino = total_corretos_treino / total_amostras_treino * 100
     print(
-        f"✅ Treinamento — Perda média: {perda_media_treino:.4f} | Acurácia: {acuracia_treino:.2f}%")
+        f" Treinamento — Perda média: {perda_media_treino:.4f} | Acurácia: {acuracia_treino:.2f}%")
 
-    # -----------------------------
-    # Validação
-    # -----------------------------
-    model.eval()  # Coloca o modelo em modo de avaliação
     total_loss_validacao = 0
     total_corretos_validacao = 0
     total_amostras_validacao = 0
@@ -244,8 +234,6 @@ for epoca in range(numero_epocas):
             _, previsoes = torch.max(saidas, 1)
             total_corretos_validacao += (previsoes == rotulos).sum().item()
             total_amostras_validacao += rotulos.size(0)
-
-            # Liberação de memória
             del imagens, rotulos, saidas, perda, previsoes
             torch.cuda.empty_cache()
             gc.collect()
@@ -253,8 +241,8 @@ for epoca in range(numero_epocas):
     perda_media_validacao = total_loss_validacao / total_amostras_validacao
     acuracia_validacao = total_corretos_validacao / total_amostras_validacao * 100
     print(
-        f"🔍 Validação — Perda média: {perda_media_validacao:.4f} | Acurácia: {acuracia_validacao:.2f}%")
+        f" Validação — Perda média: {perda_media_validacao:.4f} | Acurácia: {acuracia_validacao:.2f}%")
+    torch.save(model.state_dict(), 'modelo_epoca_resnet2.pth')
 
-# Salvamento final do modelo após todas as épocas
-torch.save(model.state_dict(), 'modelo_final.pth')
-print("💾 Modelo salvo com sucesso como 'modelo_final.pth'")
+torch.save(model.state_dict(), 'modelo_final2.pth')
+print(" Modelo salvo com sucesso como 'modelo_final.pth'")
