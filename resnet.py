@@ -8,7 +8,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 import matplotlib.pyplot as plt
 import gc
 
-caminho_imagens = 'C:/Users/User/Downloads/tomate'
+caminho_imagens = 'C:/Users/User/Downloads/tcc/plantas'
 
 img_width = 256
 img_height = 256
