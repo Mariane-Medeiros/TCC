@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from pre_processamento import preparar_dados
 from avaliacao import avaliar_modelo
-from modelos import VGG16
+from modelos import VGG16, AlexNet
 
 
 # ====== Configurações ======
