@@ -12,7 +12,7 @@ treino_loader, valid_loader, classes, media, desvio = preparar_dados(
     tamanho_validacao=0.2
 )
 
-# Visualizar um batch
+# Visualizarum batch
 mostrar_batch(treino_loader, classes, media, desvio)
 
 
