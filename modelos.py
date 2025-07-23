@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from pre_processamento import preparar_dados, mostrar_batch
+from pre_processamento import preparar_dados
 caminho_imagens = 'C:/Users/User/Downloads/tcc/plantas'
 
 treino_loader, valid_loader, classes, media, desvio = preparar_dados(
@@ -12,15 +12,12 @@ treino_loader, valid_loader, classes, media, desvio = preparar_dados(
     tamanho_validacao=0.2
 )
 
-# Visualizarum batch
-mostrar_batch(treino_loader, classes, media, desvio)
-
 num_classes = 4
-
-# softmax é aplicada internamente no crossentropyloss
 
 
 class AlexNet(nn.Module):
+    nome_arquivo_saida = "validacao_alexnet"
+
     def __init__(self, num_classes=num_classes):
         super(AlexNet, self).__init__()
         self.features = nn.Sequential(
@@ -65,6 +62,8 @@ class AlexNet(nn.Module):
 
 
 class VGG16(nn.Module):
+    nome_arquivo_saida = "validacao_vgg16"
+
     def __init__(self, num_classes=num_classes):  # 4 classes: amora/soja saudável/doente
         super(VGG16, self).__init__()
         self.features = nn.Sequential(
@@ -123,21 +122,26 @@ class VGG16(nn.Module):
 
 
 class DepthwiseSeparableConv(nn.Module):
-    def __init__(self, in_channels, out_channels, stride):
-        super(DepthwiseSeparableConv, self).__init__()
-        depthwise = nn.Conv2d(
-            in_channels, out_channels, kernel_size=3, padding=1, groups=in_channels),
+    def __init__(self, in_c, out_c, stride=1):
+        super().__init__()
+        self.depthwise = nn.Conv2d(in_c, in_c, kernel_size=3,
+                                   stride=stride, padding=1,
+                                   groups=in_c, bias=False)
+        self.pointwise = nn.Conv2d(in_c, out_c, kernel_size=1, bias=False)
+        self.bn = nn.BatchNorm2d(out_c)
+        self.relu = nn.ReLU(inplace=True)
 
-        pointwise = nn.Conv2d(
-            in_channels, out_channels, kernel_size=1),
-
-        def forward(self, x):
-            x = self.depthwise(x)
-            x = self.pointwise(x)
-            return x
+    def forward(self, x):
+        x = self.depthwise(x)
+        x = self.pointwise(x)
+        x = self.bn(x)
+        x = self.relu(x)
+        return x
 
 
 class MobileNet(nn.Module):
+    nome_arquivo_saida = "validacao_mobilenet"
+
     def __init__(self, num_classes=4):
         super(MobileNet, self).__init__()
 
@@ -211,8 +215,11 @@ class BlocoResidual(nn.Module):
 
 
 class ResNet(nn.Module):
+    nome_arquivo_saida = "validacao_resnet"
+
     def __init__(self, bloco, camadas, numero_classes):
         super().__init__()
+
         self.canais_entrada = 64
 
         self.conv1 = nn.Conv2d(3, self.canais_entrada, kernel_size=7,
@@ -264,7 +271,4 @@ class ResNet(nn.Module):
         return x
 
 
-__all__ = ['Resnet']
-__all__ = ['MobileNet']
-__all__ = ['VGG16']
-__all__ = ['AlexNet']
+__all__ = ['VGG16', 'AlexNet', 'MobileNet', 'ResNet']
