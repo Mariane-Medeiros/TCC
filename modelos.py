@@ -16,7 +16,7 @@ num_classes = 4
 
 
 class AlexNet(nn.Module):
-    nome_arquivo_saida = "validacao_alexnet"
+    nome_arquivo_saida = "amora_validacao_alexnet"
 
     def __init__(self, num_classes=num_classes):
         super(AlexNet, self).__init__()
@@ -62,9 +62,9 @@ class AlexNet(nn.Module):
 
 
 class VGG16(nn.Module):
-    nome_arquivo_saida = "validacao_vgg16"
+    nome_arquivo_saida = "amora_validacao_vgg16"
 
-    def __init__(self, num_classes=num_classes):  # 4 classes: amora/soja saudável/doente
+    def __init__(self, num_classes):
         super(VGG16, self).__init__()
         self.features = nn.Sequential(
             # bloco 1
@@ -104,20 +104,18 @@ class VGG16(nn.Module):
             nn.ReLU(True),
             nn.MaxPool2d(kernel_size=2, stride=2),
         )
+
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+
         self.classifier = nn.Sequential(
-            nn.Linear(512 * 7 * 7, 4096),
-            nn.ReLU(True),
-            nn.Dropout(),
-            nn.Linear(4096, 4096),
-            nn.ReLU(True),
-            nn.Dropout(),
-            nn.Linear(4096, num_classes)
+            nn.Linear(512, num_classes)
         )
 
     def forward(self, x):
-        x = self.features(x)
-        x = torch.flatten(x, 1)
-        x = self.classifier(x)
+        x = self.features(x)           # Extração de features
+        x = self.avgpool(x)            # Reduz para (512, 1, 1)
+        x = torch.flatten(x, 1)        # Fica (batch_size, 512)
+        x = self.classifier(x)         # Classificação final
         return x
 
 
@@ -140,7 +138,7 @@ class DepthwiseSeparableConv(nn.Module):
 
 
 class MobileNet(nn.Module):
-    nome_arquivo_saida = "validacao_mobilenet"
+    nome_arquivo_saida = "amora_validacao_mobilenet"
 
     def __init__(self, num_classes=4):
         super(MobileNet, self).__init__()
@@ -215,10 +213,12 @@ class BlocoResidual(nn.Module):
 
 
 class ResNet(nn.Module):
-    nome_arquivo_saida = "validacao_resnet"
+    nome_arquivo_saida = "amora_validacao_resnet"
 
-    def __init__(self, bloco, camadas, numero_classes):
+    def __init__(self, num_classes):
         super().__init__()
+        bloco = BlocoResidual
+        camadas = [2, 2, 2, 2]
 
         self.canais_entrada = 64
 
@@ -234,7 +234,7 @@ class ResNet(nn.Module):
         self.camada3 = self._criar_camada(bloco, 512, camadas[3], stride=2)
 
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512, numero_classes)
+        self.fc = nn.Linear(512, num_classes)
 
     def _criar_camada(self, bloco, canais_saida, blocos, stride=1):
         downsample = None

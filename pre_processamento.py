@@ -49,7 +49,8 @@ def preparar_dados(caminho_imagens, tamanho_imagem=(224, 224), batch_size=16, ta
     transformacoes = transforms.Compose([
         transforms.Resize(tamanho_imagem),
         transforms.ToTensor(),
-        transforms.Normalize(mean=media, std=desvio),
+        transforms.RandomHorizontalFlip(),
+        transforms.Normalize(mean=media, std=desvio)
     ])
 
     dataset = datasets.ImageFolder(

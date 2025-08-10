@@ -1,0 +1,20 @@
+==== AVALIAÇÃO DO MODELO ====
+
+Acurácia: 0.8667
+Precisão (macro): 0.8472
+Revocação (macro): 0.8600
+F1-score (macro): 0.8528
+
+==== Relatório por classe ====
+              precision    recall  f1-score   support
+
+      doente       0.92      0.88      0.90        50
+    saudavel       0.78      0.84      0.81        25
+
+    accuracy                           0.87        75
+   macro avg       0.85      0.86      0.85        75
+weighted avg       0.87      0.87      0.87        75
+
+==== Matriz de Confusão ====
+[[44  6]
+ [ 4 21]]

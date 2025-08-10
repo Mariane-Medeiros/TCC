@@ -2,20 +2,33 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import time
+import numpy as np
+from sklearn.utils.class_weight import compute_class_weight
 from pre_processamento import preparar_dados
 from avaliacao import avaliar_modelo
 from modelos import VGG16, AlexNet, MobileNet, ResNet
+from modelos_transfer_learning import tl_VGG16, tl_AlexNet, tl_MobileNet, tl_ResNet
 
 # ====== Configurações ======
+
 caminho_imagens = 'C:/Users/User/Downloads/tcc/plantas'
 tamanho_imagem = (224, 224)
 batch_size = 16
 tamanho_validacao = 0.2
-numero_epocas = 10
-taxa_aprendizado = 0.01
+numero_epocas = 20
+taxa_aprendizado = 0.0001
 
 # ====== Verificar dispositivo ======
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# ====== Inicialização de pesos personalizada ======
+
+
+def init_weights(m):
+    if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+        nn.init.kaiming_normal_(m.weight, nonlinearity='relu')
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0)
 
 
 # ====== Pré-processamento ======
@@ -26,12 +39,30 @@ train_loader, val_loader, classes, media, desvio = preparar_dados(
     tamanho_validacao=tamanho_validacao
 )
 
+# Verificar e imprimir a ordem das classes
+print("Ordem das classes:", classes)
+
+lista_de_rotulos = []
+for _, rotulos in train_loader:
+    lista_de_rotulos.extend(rotulos.numpy())
+
+# ====== Calcular pesos balanceados ======
+pesos = compute_class_weight(
+    class_weight="balanced",
+    classes=np.arange(len(classes)),
+    y=lista_de_rotulos
+)
+pesos_tensor = torch.FloatTensor(pesos).to(device)
 
 # ====== Modelo ======
-modelo = MobileNet(num_classes=len(classes)).to(device)
-criterio = nn.CrossEntropyLoss()
+modelo = tl_AlexNet(num_classes=len(classes)).to(device)
+
+modelo.apply(init_weights)
+
+criterio = nn.CrossEntropyLoss(weight=pesos_tensor)
 otimizador = optim.SGD(modelo.parameters(),
                        lr=taxa_aprendizado, momentum=0.9, weight_decay=0.001)
+scheduler = torch.optim.lr_scheduler.StepLR(otimizador, step_size=5, gamma=0.5)
 
 # ====== Obter nome de arquivo de saída do modelo ======
 nome_arquivo_saida = getattr(
@@ -105,6 +136,8 @@ with open(nome_log_treinamento, "w", encoding="utf-8") as log_file:
             f" Validação — Perda: {perda_val:.4f} | Acurácia: {acuracia_val:.2f}% | ⏱ Tempo: {tempo_val:.2f}s")
         log_file.write(
             f" Validação — Perda: {perda_val:.4f} | Acurácia: {acuracia_val:.2f}% | ⏱ Tempo: {tempo_val:.2f}s\n")
+
+        scheduler.step()
 
 # ====== Tempo total ======
 fim_tempo_total = time.time()

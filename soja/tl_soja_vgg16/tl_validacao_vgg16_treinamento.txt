@@ -1,0 +1,42 @@
+
+ Época 1/10
+ Treino — Perda: 0.6865 | Acurácia: 57.43% | ⏱ Tempo: 36.90s
+ Validação — Perda: 0.5999 | Acurácia: 86.11% | ⏱ Tempo: 7.19s
+
+ Época 2/10
+ Treino — Perda: 0.4665 | Acurácia: 85.14% | ⏱ Tempo: 34.97s
+ Validação — Perda: 0.4047 | Acurácia: 94.44% | ⏱ Tempo: 6.62s
+
+ Época 3/10
+ Treino — Perda: 0.2597 | Acurácia: 95.95% | ⏱ Tempo: 34.86s
+ Validação — Perda: 0.2650 | Acurácia: 91.67% | ⏱ Tempo: 6.70s
+
+ Época 4/10
+ Treino — Perda: 0.1381 | Acurácia: 97.97% | ⏱ Tempo: 35.22s
+ Validação — Perda: 0.1760 | Acurácia: 94.44% | ⏱ Tempo: 6.73s
+
+ Época 5/10
+ Treino — Perda: 0.0779 | Acurácia: 99.32% | ⏱ Tempo: 34.56s
+ Validação — Perda: 0.1384 | Acurácia: 94.44% | ⏱ Tempo: 6.76s
+
+ Época 6/10
+ Treino — Perda: 0.0519 | Acurácia: 99.32% | ⏱ Tempo: 35.21s
+ Validação — Perda: 0.1183 | Acurácia: 94.44% | ⏱ Tempo: 6.65s
+
+ Época 7/10
+ Treino — Perda: 0.0429 | Acurácia: 100.00% | ⏱ Tempo: 34.39s
+ Validação — Perda: 0.1098 | Acurácia: 97.22% | ⏱ Tempo: 6.73s
+
+ Época 8/10
+ Treino — Perda: 0.0353 | Acurácia: 100.00% | ⏱ Tempo: 34.58s
+ Validação — Perda: 0.0970 | Acurácia: 97.22% | ⏱ Tempo: 6.63s
+
+ Época 9/10
+ Treino — Perda: 0.0272 | Acurácia: 100.00% | ⏱ Tempo: 35.47s
+ Validação — Perda: 0.0874 | Acurácia: 97.22% | ⏱ Tempo: 7.00s
+
+ Época 10/10
+ Treino — Perda: 0.0240 | Acurácia: 100.00% | ⏱ Tempo: 34.49s
+ Validação — Perda: 0.0804 | Acurácia: 97.22% | ⏱ Tempo: 6.84s
+
+ Tempo total de treinamento: 418.52 segundos
