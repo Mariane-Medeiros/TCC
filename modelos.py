@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 from pre_processamento import preparar_dados
-caminho_imagens = 'C:/Users/User/Downloads/tcc/plantas'
+caminho_imagens = 'C:/Users/User/Downloads/tcc/desenvolvimento/plantas'
 
 treino_loader, valid_loader, classes, media, desvio = preparar_dados(
     caminho_imagens=caminho_imagens,

@@ -11,7 +11,7 @@ from modelos_transfer_learning import tl_VGG16, tl_AlexNet, tl_MobileNet, tl_Res
 
 # ====== Configurações ======
 
-caminho_imagens = 'C:/Users/User/Downloads/tcc/plantas'
+caminho_imagens = 'C:/Users/User/Downloads/tcc/desenvolvimento/plantas'
 tamanho_imagem = (224, 224)
 batch_size = 16
 tamanho_validacao = 0.2
@@ -55,7 +55,7 @@ pesos = compute_class_weight(
 pesos_tensor = torch.FloatTensor(pesos).to(device)
 
 # ====== Modelo ======
-modelo = tl_AlexNet(num_classes=len(classes)).to(device)
+modelo = AlexNet(num_classes=len(classes)).to(device)
 
 modelo.apply(init_weights)
 

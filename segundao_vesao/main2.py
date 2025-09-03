@@ -55,7 +55,7 @@ pesos = compute_class_weight(
 pesos_tensor = torch.FloatTensor(pesos).to(device)
 
 # ====== Modelo ======
-modelo = VGG16(num_classes=len(classes)).to(device)
+modelo = tl_AlexNet(num_classes=len(classes)).to(device)
 
 modelo.apply(init_weights)
 

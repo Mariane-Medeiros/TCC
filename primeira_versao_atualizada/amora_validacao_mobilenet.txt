@@ -1,0 +1,24 @@
+==== AVALIAÇÃO DO MODELO ====
+
+Acurácia: 0.8800
+Precisão (macro): 0.8685
+Revocação (macro): 0.8490
+F1-score (macro): 0.8513
+
+==== Relatório por classe ====
+                precision    recall  f1-score   support
+
+amora_ferrugem       0.97      0.97      0.97        32
+amora_saudavel       1.00      1.00      1.00        12
+   soja_doente       0.73      0.89      0.80        18
+ soja_saudavel       0.78      0.54      0.64        13
+
+      accuracy                           0.88        75
+     macro avg       0.87      0.85      0.85        75
+  weighted avg       0.88      0.88      0.88        75
+
+==== Matriz de Confusão ====
+[[31  0  1  0]
+ [ 0 12  0  0]
+ [ 0  0 16  2]
+ [ 1  0  5  7]]
